@@ -1,0 +1,8 @@
+{
+  "strength": 0.2,
+  "guidance_scale": 7.5,
+  "num_inference_steps": 30,
+  "max_size": 768,
+  "prompt": "romantic warm atmosphere, golden hour lighting, soft fairy lights in background, gentle warm glow, cinematic color grading, pink and gold tones, soft bokeh, cozy intimate moment, photorealistic, high quality, soft warm lighting, preserve original face, keep identity, natural skin tone",
+  "negative_prompt": "dark, cold, blue tones, ugly, blurry, deformed, distorted, low quality, bad anatomy, extra limbs, extra fingers, mutation, watermark, text, signature, different face, changed identity, plastic skin"
+}
