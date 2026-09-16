@@ -30,16 +30,24 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-sd15-cache-v2
+          key: hf-sd15-cache-v3
 
-      - name: Install dependencies
+      - name: Install dependencies (pinned)
         run: |
           python -m pip install --upgrade pip
           pip install torch==2.1.0 torchvision==0.16.0 \
             --index-url https://download.pytorch.org/whl/cpu
+          pip install "numpy<2.0"
           pip install diffusers==0.24.0 transformers==4.36.0 \
-            accelerate==0.25.0 safetensors==0.4.1
+            accelerate==0.25.0 safetensors==0.4.1 \
+            "huggingface-hub==0.19.4" "tokenizers>=0.14,<0.19"
           pip install Pillow==10.1.0 opencv-python-headless==4.8.1.78
+
+      - name: Verify imports
+        run: |
+          python -c "import numpy; print('numpy:', numpy.__version__)"
+          python -c "import torch; print('torch:', torch.__version__)"
+          python -c "from diffusers import StableDiffusionImg2ImgPipeline; print('diffusers: OK')"
 
       - name: Process images
         env:
