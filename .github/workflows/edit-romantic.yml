@@ -1,0 +1,75 @@
+name: Edit Romantic Photo
+
+on:
+  push:
+    paths:
+      - 'input/**'
+      - 'config.json'
+  workflow_dispatch:
+    inputs:
+      strength:
+        description: 'Image strength (0.15=safe, 0.35=romantic)'
+        required: false
+        default: '0.20'
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-sd15-cache-v2
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch==2.1.0 torchvision==0.16.0 \
+            --index-url https://download.pytorch.org/whl/cpu
+          pip install diffusers==0.24.0 transformers==4.36.0 \
+            accelerate==0.25.0 safetensors==0.4.1
+          pip install Pillow==10.1.0 opencv-python-headless==4.8.1.78
+
+      - name: Process images
+        env:
+          STRENGTH: ${{ github.event.inputs.strength || '0.20' }}
+        run: python scripts/edit_romantic.py
+
+      - name: Upload results to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: romantic-results-${{ github.run_number }}
+          path: output/*.png
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Create Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: result-${{ github.run_number }}
+          name: Romantic Edit #${{ github.run_number }}
+          body: |
+            **Auto-generated romantic photo edits**
+
+            - Run: #${{ github.run_number }}
+            - Strength: ${{ github.event.inputs.strength || '0.20' }}
+            - Commit: ${{ github.sha }}
+            - Triggered by: @${{ github.actor }}
+          files: output/*.png
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
